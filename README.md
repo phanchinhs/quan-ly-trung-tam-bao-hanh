@@ -52,7 +52,7 @@ BTL/
 ```powershell
 # Cách 1: MySQL Workbench -> Open btl_center.sql -> Execute
 # Cách 2: dòng lệnh (password root của bạn)
-cmd /c '"C:\Program Files\MySQL\MySQL Server 9.7\bin\mysql.exe" -u root -p12345 --default-character-set=utf8mb4 < btl_center.sql'
+cmd /c '"C:\Program Files\MySQL\MySQL Server 9.7\bin\mysql.exe" -u root -p --default-character-set=utf8mb4 < btl_center.sql'
 ```
 
 ### Bước 2 — Cấu hình kết nối DB
@@ -60,7 +60,7 @@ Mở `src/main/resources/application.properties`:
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/btl_center?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh
 spring.datasource.username=root
-spring.datasource.password=12345   # <-- đổi thành password MySQL của bạn
+spring.datasource.password=123456   # <-- đổi thành password MySQL của bạn
 ```
 
 ### Bước 3 — Chạy app
@@ -88,7 +88,7 @@ Mở trình duyệt: http://localhost:8080
 
 Chạy file truy vấn:
 ```powershell
-cmd /c '"C:\Program Files\MySQL\MySQL Server 9.7\bin\mysql.exe" -u root -p12345 < truy_van.sql'
+cmd /c '"C:\Program Files\MySQL\MySQL Server 9.7\bin\mysql.exe" -u root -p < truy_van.sql'
 ```
 
 ## 7. Ghi chú
