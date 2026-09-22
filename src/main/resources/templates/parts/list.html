@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Quản lý kho linh kiện')}"></head>
+<body th:replace="~{layout :: shell('Quản lý kho linh kiện', ~{::#page})}">
+<div id="page">
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-icon blue"><i class="bi bi-box-seam"></i></div>
+            <div>
+                <div class="stat-value" th:text="${totalParts}">0</div>
+                <div class="stat-label">Số mã linh kiện</div>
+            </div>
+        </div>
+        <div class="stat">
+            <div class="stat-icon orange"><i class="bi bi-exclamation-triangle"></i></div>
+            <div>
+                <div class="stat-value" th:text="${lowStockCount}">0</div>
+                <div class="stat-label">Sắp hết / hết hàng</div>
+            </div>
+        </div>
+        <div class="stat">
+            <div class="stat-icon green"><i class="bi bi-basket2"></i></div>
+            <div>
+                <div class="stat-value" th:text="@{/parts}">Thống kê</div>
+                <div class="stat-label"><a th:href="@{/reports}" class="text-reset text-decoration-none">Linh kiện dùng nhiều nhất →</a></div>
+            </div>
+        </div>
+        <div class="stat">
+            <div class="stat-icon teal"><i class="bi bi-plus-circle"></i></div>
+            <div>
+                <div class="stat-value"><a th:href="@{/parts/new}" class="text-reset text-decoration-none">+ Thêm</a></div>
+                <div class="stat-label">Linh kiện mới</div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${lowStockCount > 0}" class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>Cảnh báo:</strong>
+        <span th:text="${lowStockCount}"></span> linh kiện đang ở mức tồn kho thấp hoặc đã hết hàng:
+        <span th:each="p, st : ${lowStockParts}">
+            <span class="badge badge-warning"
+                  th:text="${p.name + ' (còn ' + p.quantityInStock + ')'}">tên (còn N)</span><th:block th:if="${!st.last}">, </th:block>
+        </span>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="bi bi-box-seam text-primary"></i> Kho linh kiện <span class="badge badge-muted" th:text="'(' + ${totalElements} + ')'"></span></h3>
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+                <form th:action="@{/parts}" method="get" class="d-flex gap-2">
+                    <div class="position-relative">
+                        <i class="bi bi-search position-absolute top-50 translate-middle-y text-muted" style="left:12px;"></i>
+                        <input type="text" name="keyword" class="form-control ps-5"
+                               placeholder="Tìm theo mã hoặc tên..." th:value="${keyword}"/>
+                    </div>
+                    <button type="submit" class="btn btn-outline">Tìm</button>
+                </form>
+                <a th:href="@{/parts/new}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Thêm linh kiện</a>
+            </div>
+        </div>
+        <div class="card-body table-wrap">
+            <table class="table table-hover align-middle data-table">
+                <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Tên linh kiện</th>
+                    <th>Mô tả</th>
+                    <th class="text-end">Đơn giá</th>
+                    <th class="text-center">Tồn kho</th>
+                    <th class="text-center">Ngưỡng</th>
+                    <th>Trạng thái</th>
+                    <th>Nhập/xuất kho</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${parts}">
+                    <td><strong th:text="${p.code}">SP-001</strong></td>
+                    <td th:text="${p.name}">Tên</td>
+                    <td th:text="${p.description} ?: '-'">Mô tả</td>
+                    <td class="money" th:text="${@currencyUtils.format(p.unitPrice)}">0</td>
+                    <td class="text-center"><strong th:text="${p.quantityInStock}">0</strong></td>
+                    <td class="text-center" th:text="${p.minStock}">0</td>
+                    <td>
+                        <span class="badge" th:classappend="${p.stockStatus == 'HẾT HÀNG'} ? 'badge-danger' : (${p.stockStatus == 'SẮP HẾT'} ? 'badge-warning' : 'badge-success')"
+                              th:text="${p.stockStatus}">ĐỦ</span>
+                    </td>
+                    <td>
+                        <form th:action="@{/parts/{id}/adjust(id=${p.id})}" method="post" class="d-flex gap-1"
+                              onsubmit="return confirm('Cập nhật số lượng tồn kho?');">
+                            <input type="number" name="quantity" class="form-control form-control-sm"
+                                   style="width: 110px;" placeholder="vd: +5, -2" required/>
+                            <button type="submit" class="btn btn-sm btn-outline" title="Cập nhật kho">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </button>
+                        </form>
+                    </td>
+                    <td class="text-end">
+                        <div class="d-flex gap-1 justify-content-end flex-wrap">
+                            <a th:href="@{/parts/{id}/edit(id=${p.id})}" class="btn btn-sm btn-secondary" title="Sửa"><i class="bi bi-pencil"></i></a>
+                            <a th:href="@{/parts/{id}/delete(id=${p.id})}" class="btn btn-sm btn-danger" title="Xóa"
+                               onclick="return confirm('Xóa linh kiện này?')"><i class="bi bi-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${parts.isEmpty()}">
+                    <td colspan="9" class="empty"><i class="bi bi-inbox d-block fs-3 mb-2"></i>Chưa có linh kiện nào trong kho.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${totalPages > 1}" class="card-footer d-flex justify-content-center">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" title="Trang đầu"
+                           th:href="@{/parts(page=0, keyword=${keyword})}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" title="Trang trước"
+                           th:href="@{/parts(page=${currentPage - 1}, keyword=${keyword})}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:each="p : ${pages}"
+                        th:classappend="${!p.ellipsis && p.page == currentPage} ? 'active'">
+                        <a th:if="${!p.ellipsis}" class="page-link" th:text="${p.page + 1}"
+                           th:href="@{/parts(page=${p.page}, keyword=${keyword})}">1</a>
+                        <span th:if="${p.ellipsis}" class="page-link disabled">...</span>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" title="Trang sau"
+                           th:href="@{/parts(page=${currentPage + 1}, keyword=${keyword})}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" title="Trang cuối"
+                           th:href="@{/parts(page=${totalPages - 1}, keyword=${keyword})}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

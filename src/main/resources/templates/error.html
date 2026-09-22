@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Lỗi')}"></head>
+<body th:replace="~{layout :: shell('Có lỗi xảy ra', ~{::#page})}">
+<div id="page">
+    <div class="card">
+        <div class="card-body text-center" style="padding: 60px 20px;">
+            <div style="font-size: 60px; color: var(--danger);" class="mb-3"><i class="bi bi-exclamation-triangle"></i></div>
+            <h3 class="fw-bold">Không thể thực hiện yêu cầu</h3>
+            <p class="mutated" th:if="${message != null}" th:text="${message}">Lỗi</p>
+            <p class="mutated" th:if="${message == null and error != null}" th:text="${error}">Lỗi</p>
+            <p class="mutated" th:if="${message == null and error == null}">Có lỗi không xác định xảy ra.</p>
+            <a th:href="@{/dashboard}" class="btn btn-primary mt-4"><i class="bi bi-house-door"></i> Về trang chủ</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

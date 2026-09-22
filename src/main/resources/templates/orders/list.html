@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Danh sách phiếu sửa chữa')}"></head>
+<body th:replace="~{layout :: shell('Quản lý phiếu sửa chữa', ~{::#page})}">
+<div id="page">
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="bi bi-clipboard2-pulse text-primary"></i> Phiếu sửa chữa <span class="badge badge-muted" th:text="'(' + ${totalElements} + ')'"></span></h3>
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+                <form th:action="@{/orders}" method="get" class="mb-0">
+                    <select name="status" class="form-select" onchange="this.form.submit()">
+                        <option value="" th:text="'-- Tất cả trạng thái --'"></option>
+                        <option th:each="s : ${statuses}" th:value="${s}"
+                                th:selected="${s.name() == selectedStatus}"
+                                th:text="${s.label}">Trạng thái</option>
+                    </select>
+                </form>
+                <a th:href="@{/orders/new}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Tạo phiếu mới</a>
+            </div>
+        </div>
+        <div class="card-body table-wrap">
+            <table class="table table-hover align-middle data-table">
+                <thead>
+                <tr>
+                    <th>Mã phiếu</th>
+                    <th>Khách hàng</th>
+                    <th>Thiết bị</th>
+                    <th>Kỹ thuật viên</th>
+                    <th>Ngày nhận</th>
+                    <th>Dự kiến xong</th>
+                    <th class="text-center">Trạng thái</th>
+                    <th class="text-end">Tổng chi phí</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="o : ${orders}">
+                    <td><strong th:text="${o.code}">SR-2026-0001</strong></td>
+                    <td>
+                        <a th:href="@{/customers/{id}(id=${o.customer.id})}" th:text="${o.customer.fullName}">Khách</a>
+                        <small class="d-block mutated" th:text="o.customer.phone">SĐT</small>
+                    </td>
+                    <td th:text="${o.device.brand + ' ' + o.device.model}">Thiết bị</td>
+                    <td th:text="${o.technician != null} ? ${o.technician.fullName} : '—'">KT</td>
+                    <td th:text="${#temporals.format(o.receivedAt, 'dd/MM/yyyy')}">Ngày</td>
+                    <td th:text="${o.expectedFinishDate != null} ? ${#temporals.format(o.expectedFinishDate, 'dd/MM/yyyy')} : '—'">Ngày</td>
+                    <td class="text-center"><span class="badge" th:classappend="${o.status.badgeClass}" th:text="${o.status.label}">TT</span></td>
+                    <td class="money" th:if="${o.status.name() == 'PAID' or o.status.name() == 'COMPLETED'}"
+                        th:text="${@currencyUtils.format(o.totalCost)}">0</td>
+                    <td class="money mutated" th:if="${o.status.name() != 'PAID' and o.status.name() != 'COMPLETED'}">—</td>
+                    <td class="text-end">
+                        <a th:href="@{/orders/{id}(id=${o.id})}" class="btn btn-sm btn-outline"><i class="bi bi-eye"></i> Chi tiết</a>
+                        <a th:if="${o.status.name() == 'COMPLETED' or o.status.name() == 'PAID'}"
+                           th:href="@{/orders/{id}/invoice(id=${o.id})}" target="_blank"
+                           class="btn btn-sm btn-primary" title="In hóa đơn (PDF)"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+                    </td>
+                </tr>
+                <tr th:if="${orders.isEmpty()}">
+                    <td colspan="9" class="empty"><i class="bi bi-inbox d-block fs-3 mb-2"></i>Không có phiếu sửa chữa nào.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${totalPages > 1}" class="card-footer d-flex justify-content-center">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" title="Trang đầu"
+                           th:href="@{/orders(page=0, status=${selectedStatus})}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" title="Trang trước"
+                           th:href="@{/orders(page=${currentPage - 1}, status=${selectedStatus})}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:each="p : ${pages}"
+                        th:classappend="${!p.ellipsis && p.page == currentPage} ? 'active'">
+                        <a th:if="${!p.ellipsis}" class="page-link" th:text="${p.page + 1}"
+                           th:href="@{/orders(page=${p.page}, status=${selectedStatus})}">1</a>
+                        <span th:if="${p.ellipsis}" class="page-link disabled">...</span>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" title="Trang sau"
+                           th:href="@{/orders(page=${currentPage + 1}, status=${selectedStatus})}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" title="Trang cuối"
+                           th:href="@{/orders(page=${totalPages - 1}, status=${selectedStatus})}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

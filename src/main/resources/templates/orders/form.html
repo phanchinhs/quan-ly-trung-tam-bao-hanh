@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${isEdit} ? 'Sửa phiếu sửa chữa' : 'Tạo phiếu sửa chữa')}"></head>
+<body th:replace="~{layout :: shell(${isEdit} ? 'Sửa phiếu sửa chữa' : 'Tạo phiếu sửa chữa mới', ~{::#page})}">
+<div id="page">
+
+    <div class="card" style="max-width: 920px;">
+        <div class="card-header">
+            <h3 th:text="${isEdit} ? 'Cập nhật phiếu ' + ${order.code} : 'Thông tin phiếu sửa chữa'">Form</h3>
+        </div>
+        <div class="card-body">
+
+            <!-- EDIT: thông tin thiết bị đã chọn -->
+            <div th:if="${isEdit}" class="mb-4">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Khách hàng</span>
+                        <span class="info-value">
+                            <a th:href="@{/customers/{id}(id=${order.customer.id})}"
+                               th:text="${order.customer.fullName + ' - ' + order.customer.phone}">Khách</a>
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Thiết bị</span>
+                        <span class="info-value"
+                              th:text="${order.device.brand + ' ' + order.device.model + ' (Serial: ' + order.device.serialNumber + ')'}">TB</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Loại thiết bị</span>
+                        <span class="info-value" th:text="${order.device.deviceType.label}">Loại</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Bảo hành thiết bị</span>
+                        <span th:if="${order.device.underWarranty}" class="badge badge-success">Còn bảo hành</span>
+                        <span th:if="${!order.device.underWarranty}" class="badge badge-danger">Hết bảo hành</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: chọn thiết bị -->
+            <form th:if="${!isEdit}" th:action="@{/orders/create}" method="post">
+                <div class="form-group">
+                    <label for="deviceId">Chọn thiết bị cần sửa chữa <span class="req">*</span></label>
+                    <select id="deviceId" name="deviceId" class="form-select" required>
+                        <option value="" th:text="'-- Chọn thiết bị --'"></option>
+                        <option th:each="d : ${devices}" th:value="${d.id}"
+                                th:text="${d.brand + ' ' + d.model + ' (Serial: ' + d.serialNumber + ') - ' + d.customer.fullName}">TB</option>
+                    </select>
+                    <span class="form-hint">Nếu thiết bị chưa có, hãy <a th:href="@{/devices/new}">đăng ký thiết bị</a> trước.</span>
+                </div>
+                <div class="form-group">
+                    <label for="issueDescription">Mô tả sự cố / triệu chứng <span class="req">*</span></label>
+                    <textarea id="issueDescription" name="issueDescription" class="form-control"
+                              th:text="${order.issueDescription}" required></textarea>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="productCondition">Tình trạng máy khi nhận</label>
+                        <textarea id="productCondition" name="productCondition" class="form-control"
+                                  th:text="${order.productCondition}"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="accessories">Phụ kiện kèm máy</label>
+                        <textarea id="accessories" name="accessories" class="form-control"
+                                  th:text="${order.accessories}"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="note">Ghi chú</label>
+                    <textarea id="note" name="note" class="form-control" th:text="${order.note}"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Tạo phiếu sửa chữa</button>
+                    <a th:href="@{/orders}" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+
+            <!-- EDIT: cập nhật thông tin sửa chữa -->
+            <form th:if="${isEdit and (order.status.name() == 'RECEIVED' or order.status.name() == 'IN_PROGRESS' or order.status.name() == 'WAITING_PARTS' or order.status.name() == 'COMPLETED')}"
+                  th:action="@{/orders/{id}/update(id=${order.id})}" method="post">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="technicianId">Kỹ thuật viên phụ trách</label>
+                        <select id="technicianId" name="technicianId" class="form-select">
+                            <option value="" th:text="'-- Chưa phân công --'"></option>
+                            <option th:each="t : ${technicians}" th:value="${t.id}"
+                                    th:selected="${order.technician != null and order.technician.id == t.id}"
+                                    th:text="${t.fullName}">KTV</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="expectedFinishDate">Dự kiến hoàn thành</label>
+                        <input type="date" id="expectedFinishDate" name="expectedFinishDate" class="form-control"
+                               th:value="${order.expectedFinishDate}"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="laborCost">Tiền công sửa chữa (VNĐ)</label>
+                        <input type="number" id="laborCost" name="laborCost" class="form-control" min="0" step="1000"
+                               th:value="${order.laborCost}"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="issueDescription">Mô tả sự cố</label>
+                    <textarea id="issueDescription" name="issueDescription" class="form-control"
+                              th:text="${order.issueDescription}"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="diagnosis">Chẩn đoán / nguyên nhân</label>
+                    <textarea id="diagnosis" name="diagnosis" class="form-control"
+                              th:text="${order.diagnosis}"></textarea>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="productCondition">Tình trạng máy khi nhận</label>
+                        <textarea id="productCondition" name="productCondition" class="form-control"
+                                  th:text="${order.productCondition}"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="accessories">Phụ kiện kèm máy</label>
+                        <textarea id="accessories" name="accessories" class="form-control"
+                                  th:text="${order.accessories}"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="note">Ghi chú</label>
+                    <textarea id="note" name="note" class="form-control" th:text="${order.note}"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Lưu thay đổi</button>
+                    <a th:href="@{/orders/{id}(id=${order.id})}" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+
+            <div th:if="${isEdit and (order.status.name() == 'PAID' or order.status.name() == 'CANCELLED')}"
+                 class="alert alert-info mb-0">
+                <i class="bi bi-info-circle me-2"></i>
+                <span>Phiếu ở trạng thái cuối (<strong th:text="${order.status.label}"></strong>) nên không thể chỉnh sửa nội dung.</span>
+                <a th:href="@{/orders/{id}(id=${order.id})}" class="alert-link">Xem chi tiết</a>.
+            </div>
+
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

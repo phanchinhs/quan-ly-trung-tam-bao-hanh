@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${isEdit} ? 'Sửa linh kiện' : 'Thêm linh kiện')}"></head>
+<body th:replace="~{layout :: shell(${isEdit} ? 'Sửa linh kiện' : 'Thêm linh kiện mới', ~{::#page})}">
+<div id="page">
+
+    <div class="card" style="max-width: 720px;">
+        <div class="card-header">
+            <h3 th:text="${isEdit} ? 'Cập nhật linh kiện ' + ${part.code} : 'Thông tin linh kiện'">Form</h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/parts/save}" method="post">
+                <input type="hidden" name="id" th:value="${part.id}"/>
+                <input type="hidden" name="isEdit" th:value="${isEdit}"/>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="code">Mã linh kiện <span class="req">*</span></label>
+                        <input type="text" id="code" name="code" class="form-control"
+                               th:value="${part.code}" placeholder="VD: SP-001"
+                               th:readonly="${isEdit}" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Tên linh kiện <span class="req">*</span></label>
+                        <input type="text" id="name" name="name" class="form-control"
+                               th:value="${part.name}" placeholder="VD: Pin iPhone 15" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="unitPrice">Đơn giá (VNĐ)</label>
+                        <input type="number" id="unitPrice" name="unitPrice" class="form-control"
+                               min="0" step="1000" th:value="${part.unitPrice}"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Mô tả</label>
+                        <input type="text" id="description" name="description" class="form-control"
+                               th:value="${part.description}" placeholder="Mô tả ngắn về linh kiện"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantityInStock">Tồn kho hiện tại</label>
+                        <input type="number" id="quantityInStock" name="quantityInStock" class="form-control"
+                               min="0" th:value="${part.quantityInStock}"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="minStock">Ngưỡng cảnh báo sắp hết</label>
+                        <input type="number" id="minStock" name="minStock" class="form-control"
+                               min="0" th:value="${part.minStock}"
+                               title="Khi tồn kho nhỏ hơn hoặc bằng ngưỡng này, hệ thống sẽ cảnh báo."/>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i>
+                        <span th:text="${isEdit} ? 'Lưu thay đổi' : 'Thêm linh kiện'">Lưu</span>
+                    </button>
+                    <a th:href="@{/parts}" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

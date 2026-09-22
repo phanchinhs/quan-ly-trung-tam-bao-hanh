@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Chi tiết khách hàng')}"></head>
+<body th:replace="~{layout :: shell('Chi tiết khách hàng', ~{::#page})}">
+<div id="page">
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="avatar" style="width:48px;height:48px;min-width:48px;font-size:18px;"
+             th:text="${#strings.substring(customer.fullName, 0, 1)}">?</div>
+        <div>
+            <h4 class="mb-0 fw-bold" th:text="${customer.fullName}">Khách hàng</h4>
+            <small class="text-muted">Ngày đăng ký: <span th:text="${#temporals.format(customer.createdAt, 'dd/MM/yyyy')}">Ngày</span></small>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="bi bi-person-vcard text-primary"></i> Thông tin liên hệ</h3>
+            <div class="d-flex gap-2 flex-wrap">
+                <a th:href="@{/customers/edit/{id}(id=${customer.id})}" class="btn btn-secondary btn-sm"><i class="bi bi-pencil"></i> Sửa thông tin</a>
+                <a th:href="@{'/devices/new?customerId=' + ${customer.id}}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Thêm thiết bị</a>
+                <a th:href="@{/customers}" class="btn btn-outline btn-sm"><i class="bi bi-arrow-left"></i> Quay lại</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Số điện thoại</span>
+                    <span class="info-value"><i class="bi bi-telephone text-primary me-1"></i><span th:text="${customer.phone}">SĐT</span></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" th:text="${customer.email} ?: '—'">Email</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Địa chỉ</span>
+                    <span class="info-value" th:text="${customer.address} ?: '—'">Địa chỉ</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Ngày đăng ký</span>
+                    <span class="info-value" th:text="${#temporals.format(customer.createdAt, 'dd/MM/yyyy')}">Ngày</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="bi bi-device-ssd text-primary"></i> Thiết bị của khách hàng
+                <span class="badge badge-muted" th:text="'(' + ${#lists.size(devices)} + ')'"></span></h3>
+        </div>
+        <div class="card-body table-wrap">
+            <table class="table table-hover align-middle data-table">
+                <thead>
+                <tr>
+                    <th>Serial</th>
+                    <th>Loại</th>
+                    <th>Thiết bị</th>
+                    <th>Ngày mua</th>
+                    <th>Hết hạn bảo hành</th>
+                    <th>Bảo hành</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="d : ${devices}">
+                    <td><strong th:text="${d.serialNumber}">Serial</strong></td>
+                    <td th:text="${d.deviceType.label}">Loại</td>
+                    <td th:text="${d.brand + ' ' + d.model}">Thiết bị</td>
+                    <td th:text="${d.purchaseDate != null} ? ${#temporals.format(d.purchaseDate, 'dd/MM/yyyy')} : '-'">Ngày mua</td>
+                    <td th:text="${d.warrantyEndDate != null} ? ${#temporals.format(d.warrantyEndDate, 'dd/MM/yyyy')} : '-'">Hết hạn</td>
+                    <td>
+                        <span th:if="${d.underWarranty}" class="badge badge-success">Còn bảo hành</span>
+                        <span th:if="${!d.underWarranty}" class="badge badge-danger">Hết hạn</span>
+                    </td>
+                </tr>
+                <tr th:if="${devices.isEmpty()}">
+                    <td colspan="6" class="empty"><i class="bi bi-inbox d-block fs-3 mb-2"></i>Khách hàng chưa đăng ký thiết bị nào.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

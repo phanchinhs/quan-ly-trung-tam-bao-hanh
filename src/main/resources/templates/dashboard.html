@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{layout :: head('Tổng quan')}"></head>
+<body th:replace="~{layout :: shell('Tổng quan', ~{::#page})}">
+<div id="page">
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-icon blue"><i class="bi bi-people"></i></div>
+            <div>
+                <div class="stat-value" th:text="${totalCustomers}">0</div>
+                <div class="stat-label">Khách hàng</div>
+            </div>
+        </div>
+        <div class="stat">
+            <div class="stat-icon teal"><i class="bi bi-device-ssd"></i></div>
+            <div>
+                <div class="stat-value" th:text="${totalDevices}">0</div>
+                <div class="stat-label">Thiết bị quản lý</div>
+            </div>
+        </div>
+        <div class="stat">
+            <div class="stat-icon orange"><i class="bi bi-gear-wide-connected"></i></div>
+            <div>
+                <div class="stat-value" th:text="${activeOrders}">0</div>
+                <div class="stat-label">Phiếu đang xử lý</div>
+                <div class="stat-sub" th:text="('Tổng phiếu: ' + ${totalOrders})">Tổng phiếu: 0</div>
+            </div>
+        </div>
+        <div class="stat">
+            <div class="stat-icon green"><i class="bi bi-cash-coin"></i></div>
+            <div>
+                <div class="stat-value" th:text="${@currencyUtils.format(revenueThisMonth)}">0</div>
+                <div class="stat-label">Doanh thu tháng này</div>
+                <div class="stat-sub" th:text="'Tổng lũy kế: ' + ${@currencyUtils.format(revenueTotal)}">Lũy kế</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 g-lg-4 mb-1">
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h3><i class="bi bi-bar-chart-line text-primary"></i> Doanh thu 6 tháng gần nhất</h3>
+                    <a th:href="@{/reports}" class="btn btn-outline btn-sm">Xem báo cáo</a>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box"><canvas id="revenueChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h3><i class="bi bi-pie-chart-fill text-primary"></i> Trạng thái phiếu</h3>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box"><canvas id="statusChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="bi bi-clipboard2-pulse text-primary"></i> Phiếu sửa chữa gần đây</h3>
+            <a th:href="@{/orders/new}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Tạo phiếu mới</a>
+        </div>
+        <div class="card-body table-wrap">
+            <table class="table table-hover align-middle data-table">
+                <thead>
+                <tr>
+                    <th>Mã phiếu</th>
+                    <th>Khách hàng</th>
+                    <th>Thiết bị</th>
+                    <th>Sự cố</th>
+                    <th>Ngày nhận</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="o : ${recentOrders}">
+                    <td><strong th:text="${o.code}">SR-2026-0001</strong></td>
+                    <td th:text="${o.customer.fullName}">Khách</td>
+                    <td th:text="${o.device.brand + ' ' + o.device.model}">Thiết bị</td>
+                    <td th:title="${o.issueDescription}" th:text="${#strings.abbreviate(o.issueDescription, 40)}">Sự cố</td>
+                    <td th:text="${#temporals.format(o.receivedAt, 'dd/MM/yyyy HH:mm')}">ngày</td>
+                    <td><span class="badge" th:classappend="${o.status.badgeClass}" th:text="${o.status.label}">Trạng thái</span></td>
+                    <td class="text-end">
+                        <a th:href="@{/orders/{id}(id=${o.id})}" class="btn btn-sm btn-outline">Chi tiết</a>
+                    </td>
+                </tr>
+                <tr th:if="${recentOrders.isEmpty()}">
+                    <td colspan="7" class="empty">Chưa có phiếu sửa chữa nào.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div th:if="${lowStockCount > 0}" class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>Linh kiện sắp hết hàng:</strong>
+        <span th:text="${lowStockCount}"></span> loại linh kiện đang cạn
+        (<a th:href="@{/parts}" class="alert-link">Xem kho</a>):
+        <span th:each="p, st : ${lowStockParts}">
+            <span class="badge badge-warning" th:text="${p.name + ' (còn ' + p.quantityInStock + ')'}">tên (còn N)</span><th:block th:if="${!st.last}">, </th:block>
+        </span>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="bi bi-shield-check text-primary"></i> Bảo hành sắp hết hạn (30 ngày tới)</h3>
+            <a th:href="@{/devices}" class="btn btn-outline btn-sm">Danh sách thiết bị</a>
+        </div>
+        <div class="card-body table-wrap">
+            <table class="table table-hover align-middle data-table">
+                <thead>
+                <tr>
+                    <th>Serial</th>
+                    <th>Thiết bị</th>
+                    <th>Khách hàng</th>
+                    <th>Hết hạn bảo hành</th>
+                    <th>Trạng thái</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="d : ${warrantiesExpiring}">
+                    <td th:text="${d.serialNumber}">Serial</td>
+                    <td th:text="${d.brand + ' ' + d.model}">Thiết bị</td>
+                    <td th:text="${d.customer.fullName}">Khách</td>
+                    <td th:text="${#temporals.format(d.warrantyEndDate, 'dd/MM/yyyy')}">Ngày</td>
+                    <td th:if="${!d.underWarranty}"><span class="badge badge-danger">Đã hết hạn</span></td>
+                    <td th:if="${d.underWarranty}"><span class="badge badge-success">Còn bảo hành</span></td>
+                </tr>
+                <tr th:if="${warrantiesExpiring.isEmpty()}">
+                    <td colspan="5" class="empty">Không có thiết bị nào hết hạn bảo hành trong 30 ngày tới.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script th:inline="javascript">
+        const monthLabels = [[${monthLabels}]];
+        const monthRevenue = [[${monthRevenue}]];
+        const counts = {
+            received: [[${countReceived}]],
+            inProgress: [[${countInProgress}]],
+            waitingParts: [[${countWaitingParts}]],
+            completed: [[${countCompleted}]],
+            paid: [[${countPaid}]],
+            cancelled: [[${countCancelled}]]
+        };
+
+        const fmtMoney = function (v) {
+            return new Intl.NumberFormat('vi-VN').format(v) + ' ₫';
+        };
+
+        // Bar chart - doanh thu 6 tháng gần nhất
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'bar',
+            data: {
+                labels: monthLabels,
+                datasets: [{
+                    label: 'Doanh thu',
+                    data: monthRevenue,
+                    backgroundColor: 'rgba(99, 102, 241, 0.75)',
+                    hoverBackgroundColor: 'rgba(79, 70, 229, 0.95)',
+                    borderRadius: 10,
+                    borderSkipped: false,
+                    maxBarThickness: 46
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (ctx) { return fmtMoney(ctx.parsed.y); }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: function (v) { return (v / 1000000).toLocaleString('vi-VN') + 'tr'; } },
+                        grid: { color: '#eef2f7' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Doughnut - trạng thái phiếu
+        const statusLabels = ['Đã tiếp nhận', 'Đang sửa chữa', 'Chờ linh kiện', 'Hoàn thành', 'Đã thanh toán', 'Đã hủy'];
+        const statusData = [counts.received, counts.inProgress, counts.waitingParts, counts.completed, counts.paid, counts.cancelled];
+        const statusColors = ['#06b6d4', '#4f46e5', '#d97706', '#16a34a', '#6366f1', '#94a3b8'];
+
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    data: statusData,
+                    backgroundColor: statusColors,
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '62%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } }
+                }
+            }
+        });
+    </script>
+
+</div>
+</body>
+</html>

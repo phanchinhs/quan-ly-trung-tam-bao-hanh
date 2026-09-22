@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${isEdit} ? 'Sửa khách hàng' : 'Thêm khách hàng')}"></head>
+<body th:replace="~{layout :: shell(${isEdit} ? 'Sửa khách hàng' : 'Thêm khách hàng mới', ~{::#page})}">
+<div id="page">
+
+    <div class="card" style="max-width: 780px;">
+        <div class="card-header">
+            <h3 th:text="${isEdit} ? 'Cập nhật thông tin khách hàng' : 'Thông tin khách hàng mới'">Form</h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/customers/save}" method="post">
+                <input type="hidden" name="id" th:value="${customer.id}"/>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="fullName">Họ tên <span class="req">*</span></label>
+                        <input type="text" id="fullName" name="fullName" class="form-control" th:value="${customer.fullName}" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Số điện thoại <span class="req">*</span></label>
+                        <input type="text" id="phone" name="phone" class="form-control" th:value="${customer.phone}" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" th:value="${customer.email}"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Địa chỉ</label>
+                        <input type="text" id="address" name="address" class="form-control" th:value="${customer.address}"/>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="${isEdit} ? 'Lưu thay đổi' : 'Thêm khách hàng'">Lưu</button>
+                    <a th:href="@{/customers}" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

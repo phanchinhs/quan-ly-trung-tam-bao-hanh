@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Quản lý tài khoản')}"></head>
+<body th:replace="~{layout :: shell('Quản lý tài khoản', ~{::#page})}">
+<div id="page">
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="bi bi-person-gear text-primary"></i> Tài khoản người dùng <span class="badge badge-muted" th:text="'(' + ${totalElements} + ')'"></span></h3>
+            <a th:href="@{/users/new}" class="btn btn-primary"><i class="bi bi-person-plus"></i> Tài khoản mới</a>
+        </div>
+        <div class="card-body table-wrap">
+            <table class="table table-hover align-middle data-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Họ tên</th>
+                    <th>Điện thoại</th>
+                    <th>Email</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${users}">
+                    <td th:text="${u.id}">1</td>
+                    <td><strong th:text="${u.username}">user</strong></td>
+                    <td th:text="${u.fullName}">Tên</td>
+                    <td th:text="${u.phone} ?: '—'">SĐT</td>
+                    <td th:text="${u.email} ?: '—'">Email</td>
+                    <td>
+                        <span th:if="${u.role.name() == 'ADMIN'}" class="badge badge-primary" th:text="${u.role.label}">ADMIN</span>
+                        <span th:if="${u.role.name() != 'ADMIN'}" class="badge badge-info" th:text="${u.role.label}">STAFF</span>
+                    </td>
+                    <td>
+                        <span th:if="${u.active}" class="badge badge-success">Đang hoạt động</span>
+                        <span th:if="${!u.active}" class="badge badge-muted">Đã khóa</span>
+                    </td>
+                    <td th:text="${#temporals.format(u.createdAt, 'dd/MM/yyyy')}">Ngày</td>
+                    <td class="text-end">
+                        <div th:if="${currentUser == null or currentUser.username != u.username}" class="d-flex gap-1 justify-content-end flex-wrap">
+                            <a th:href="@{/users/edit/{id}(id=${u.id})}" class="btn btn-sm btn-secondary" title="Sửa"><i class="bi bi-pencil"></i></a>
+                            <button type="button" class="btn btn-sm btn-warning" title="Đặt lại mật khẩu"
+                                    th:onclick="'document.getElementById(\'reset-form-'+${u.id}+'\').style.display=\'block\''"><i class="bi bi-key"></i></button>
+                            <a th:href="@{/users/{id}/toggle(id=${u.id})}" class="btn btn-sm btn-outline" title="Khóa / Mở khóa"
+                               th:text="${u.active} ? 'Khóa' : 'Mở khóa'"
+                               th:onclick="'return confirm(\''+(${u.active} ? 'Khóa' : 'Mở khóa')+' tài khoản này?\')'"></a>
+                            <a th:href="@{/users/{id}/delete(id=${u.id})}" class="btn btn-sm btn-danger" title="Xóa"
+                               th:onclick="'return confirm(\'Xóa tài khoản này?\')'"><i class="bi bi-trash"></i></a>
+                        </div>
+                        <span th:if="${currentUser != null and currentUser.username == u.username}"
+                              class="badge badge-muted">(Bạn)</span>
+                        <form th:id="'reset-form-' + ${u.id}"
+                              th:action="@{/users/{id}/reset-password(id=${u.id})}" method="post"
+                              style="display:none;" class="mt-2 pt-2 border-top d-flex gap-2 flex-wrap">
+                            <input type="password" name="password" class="form-control" placeholder="Mật khẩu mới (>= 6 ký tự)"
+                                   style="max-width:220px;" required/>
+                            <button type="submit" class="btn btn-sm btn-primary">Lưu</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${totalPages > 1}" class="card-footer d-flex justify-content-center">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" title="Trang đầu"
+                           th:href="@{/users(page=0)}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" title="Trang trước"
+                           th:href="@{/users(page=${currentPage - 1})}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:each="p : ${pages}"
+                        th:classappend="${!p.ellipsis && p.page == currentPage} ? 'active'">
+                        <a th:if="${!p.ellipsis}" class="page-link" th:text="${p.page + 1}"
+                           th:href="@{/users(page=${p.page})}">1</a>
+                        <span th:if="${p.ellipsis}" class="page-link disabled">...</span>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" title="Trang sau"
+                           th:href="@{/users(page=${currentPage + 1})}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" title="Trang cuối"
+                           th:href="@{/users(page=${totalPages - 1})}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

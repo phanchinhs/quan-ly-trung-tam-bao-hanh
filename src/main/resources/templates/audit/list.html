@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Nhật ký hoạt động')}"></head>
+<body th:replace="~{layout :: shell('Nhật ký hoạt động', ~{::#page})}">
+<div id="page">
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-icon blue"><i class="bi bi-clock-history"></i></div>
+            <div>
+                <div class="stat-value" th:text="${totalElements}">0</div>
+                <div class="stat-label">Tổng số hoạt động</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="bi bi-clock-history text-primary"></i> Nhật ký hoạt động</h3>
+            <form th:action="@{/audit}" method="get" class="d-flex gap-2">
+                <input type="text" name="keyword" class="form-control"
+                       th:value="${keyword}" placeholder="Tìm theo thực thể hoặc hành động..."
+                       style="max-width: 300px;"/>
+                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search"></i> Tìm</button>
+                <a th:href="@{/audit}" class="btn btn-outline btn-sm">Xóa bộ lọc</a>
+            </form>
+        </div>
+        <div class="card-body table-wrap">
+            <table class="table table-hover align-middle data-table">
+                <thead>
+                <tr>
+                    <th style="width:170px;">Thời gian</th>
+                    <th style="width:100px;">Hành động</th>
+                    <th style="width:140px;">Thực thể</th>
+                    <th style="width:80px;">ID</th>
+                    <th style="width:120px;">Người thực hiện</th>
+                    <th>Chi tiết</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="log : ${logs}">
+                    <td>
+                        <span th:text="${#temporals.format(log.timestamp, 'dd/MM/yyyy HH:mm:ss')}">01/01/2026 00:00:00</span>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${log.action == 'CREATE'} ? 'badge-success' : (${log.action == 'DELETE'} ? 'badge-danger' : 'badge-warning')"
+                              th:text="${log.action}">CREATE</span>
+                    </td>
+                    <td th:text="${log.entityName}">Entity</td>
+                    <td th:text="${log.entityId}">-</td>
+                    <td th:text="${log.username}">user</td>
+                    <td th:text="${log.details}">-</td>
+                </tr>
+                <tr th:if="${logs.isEmpty()}">
+                    <td colspan="6" class="empty">
+                        <i class="bi bi-inbox d-block fs-3 mb-2"></i>Chưa có nhật ký hoạt động.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${totalPages > 1}" class="card-footer d-flex justify-content-center">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" title="Trang đầu"
+                           th:href="@{/audit(page=0, keyword=${keyword})}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" title="Trang trước"
+                           th:href="@{/audit(page=${currentPage - 1}, keyword=${keyword})}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:each="p : ${pages}"
+                        th:classappend="${!p.ellipsis && p.page == currentPage} ? 'active'">
+                        <a th:if="${!p.ellipsis}" class="page-link" th:text="${p.page + 1}"
+                           th:href="@{/audit(page=${p.page}, keyword=${keyword})}">1</a>
+                        <span th:if="${p.ellipsis}" class="page-link disabled">...</span>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" title="Trang sau"
+                           th:href="@{/audit(page=${currentPage + 1}, keyword=${keyword})}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" title="Trang cuối"
+                           th:href="@{/audit(page=${totalPages - 1}, keyword=${keyword})}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

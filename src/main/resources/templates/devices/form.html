@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${isEdit} ? 'Sửa thiết bị' : 'Thêm thiết bị')}"></head>
+<body th:replace="~{layout :: shell(${isEdit} ? 'Sửa thiết bị' : 'Thêm thiết bị mới', ~{::#page})}">
+<div id="page">
+
+    <div class="card" style="max-width: 860px;">
+        <div class="card-header">
+            <h3 th:text="${isEdit} ? 'Cập nhật thông tin thiết bị' : 'Đăng ký thiết bị mới'">Form</h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/devices/save}" method="post">
+                <input type="hidden" name="id" th:value="${device.id}"/>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="serialNumber">Số serial <span class="req">*</span></label>
+                        <input type="text" id="serialNumber" name="serialNumber" class="form-control"
+                               th:value="${device.serialNumber}" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="deviceType">Loại thiết bị</label>
+                        <select id="deviceType" name="deviceType" class="form-select">
+                            <option th:each="t : ${deviceTypes}" th:value="${t}"
+                                    th:selected="${device.deviceType == t}" th:text="${t.label}">Loại</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="brand">Hãng sản xuất</label>
+                        <input type="text" id="brand" name="brand" class="form-control" th:value="${device.brand}"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="model">Model</label>
+                        <input type="text" id="model" name="model" class="form-control" th:value="${device.model}"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerId">Chủ sở hữu <span class="req">*</span></label>
+                        <select id="customerId" name="customerId" class="form-select" required>
+                            <option value="" th:text="'-- Chọn khách hàng --'"></option>
+                            <option th:each="c : ${customers}" th:value="${c.id}"
+                                    th:selected="${isEdit ? (device.customer.id == c.id) : (selectedCustomerId == c.id)}"
+                                    th:text="${c.fullName + ' - ' + c.phone}">Khách</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="purchaseDate">Ngày mua</label>
+                        <input type="date" id="purchaseDate" name="purchaseDate" class="form-control"
+                               th:value="${device.purchaseDate}"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="warrantyEndDate">Ngày hết hạn bảo hành</label>
+                        <input type="date" id="warrantyEndDate" name="warrantyEndDate" class="form-control"
+                               th:value="${device.warrantyEndDate}"/>
+                        <span class="form-hint">Để trống nếu chưa có thông tin bảo hành.</span>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="${isEdit} ? 'Lưu thay đổi' : 'Thêm thiết bị'">Lưu</button>
+                    <a th:href="@{/devices}" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

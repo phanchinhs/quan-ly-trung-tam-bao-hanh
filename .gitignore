@@ -1,0 +1,27 @@
+# Maven / Java
+target/
+*.class
+*.jar
+*.war
+
+# Spring Boot
+*.log
+*.err.log
+run*.log
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.eclipse
+*.settings/
+.classpath
+.project
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Env / secrets (nếu sau này tách config riêng)
+.env

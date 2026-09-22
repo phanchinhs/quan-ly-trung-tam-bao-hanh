@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Tra cứu phiếu')}"></head>
+<body class="login-page">
+<div class="login-box">
+    <div class="login-logo">
+        <div class="brand-logo"><i class="bi bi-search"></i></div>
+        <div>
+            <h1>Tra cứu phiếu sửa chữa</h1>
+            <small>Trung tâm bảo hành &amp; sửa chữa thiết bị điện tử</small>
+        </div>
+    </div>
+
+    <form th:action="@{/track}" method="get" class="row g-2">
+        <div class="col-12">
+            <label class="form-label" for="code">Mã phiếu sửa chữa</label>
+            <input type="text" id="code" name="code" class="form-control" placeholder="VD: SR-2026-0005"
+                   th:value="${query}" required autofocus/>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-search"></i> Tra cứu
+            </button>
+        </div>
+    </form>
+
+    <div class="login-error" th:if="${query != null and order == null}">
+        <i class="bi bi-exclamation-triangle me-1"></i>
+        Không tìm thấy phiếu sửa chữa có mã <strong th:text="${query}">.</strong>
+    </div>
+
+    <div class="track-result" th:if="${order != null}">
+        <div class="track-result-header">
+            <span class="badge" th:classappend="${order.status.badgeClass}"
+                  th:text="${order.status.label}">Trạng thái</span>
+            <small th:text="${order.code}">SR-...</small>
+        </div>
+        <table class="table table-sm align-middle mb-3">
+            <tbody>
+            <tr>
+                <td class="text-muted">Khách hàng</td>
+                <td th:text="${order.customer != null ? order.customer.fullName : '—'}">Khách</td>
+            </tr>
+            <tr>
+                <td class="text-muted">Thiết bị</td>
+                <td th:text="${order.device != null ? order.device.brand + ' ' + order.device.model : '—'}">Thiết bị</td>
+            </tr>
+            <tr>
+                <td class="text-muted">Serial</td>
+                <td th:text="${order.device != null ? order.device.serialNumber : '—'}">Serial</td>
+            </tr>
+            <tr>
+                <td class="text-muted">Mô tả sự cố</td>
+                <td th:text="${order.issueDescription}">Mô tả</td>
+            </tr>
+            <tr>
+                <td class="text-muted">Ngày tiếp nhận</td>
+                <td th:text="${#temporals.format(order.receivedAt, 'dd/MM/yyyy HH:mm')}">Ngày</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="track-timeline">
+            <div th:each="s : ${@repairService.statusTimeline(order)}" class="track-step"
+                 th:classappend="${s.current ? 'active' : (s.done ? 'done' : '')}">
+                <div class="track-ico">
+                    <i th:if="${s.done}" class="bi bi-check-lg"></i>
+                    <i th:unless="${s.done}" class="bi bi-dot"></i>
+                </div>
+                <span th:text="${s.label}"
+                      th:classappend="${s.current ? 'fw-bold' : ''}">Bước</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-hint" style="text-align:center;">
+        <a th:href="@{/login}"><i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập hệ thống</a>
+    </div>
+</div>
+</body>
+</html>

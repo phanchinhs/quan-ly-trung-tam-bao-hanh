@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Hồ sơ của tôi')}"></head>
+<body th:replace="~{layout :: shell('Hồ sơ của tôi', ~{::#page})}">
+<div id="page">
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="avatar" style="width:56px;height:56px;min-width:56px;font-size:22px;"
+             th:text="${#strings.substring(account.fullName, 0, 1)}">?</div>
+        <div>
+            <h4 class="mb-0 fw-bold" th:text="${account.fullName}">Tên</h4>
+            <span class="badge badge-primary" th:text="${account.role.label}">Vai trò</span>
+        </div>
+    </div>
+
+    <div class="card" style="max-width: 780px;">
+        <div class="card-header">
+            <h3><i class="bi bi-person-vcard text-primary"></i> Thông tin tài khoản</h3>
+        </div>
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Tên đăng nhập</span>
+                    <span class="info-value" th:text="${account.username}">user</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Họ tên</span>
+                    <span class="info-value" th:text="${account.fullName}">Tên</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Vai trò</span>
+                    <span class="info-value" th:text="${account.role.label}">Vai trò</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Điện thoại</span>
+                    <span class="info-value" th:text="${account.phone} ?: '—'">SĐT</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" th:text="${account.email} ?: '—'">Email</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Ngày tạo</span>
+                    <span class="info-value" th:text="${#temporals.format(account.createdAt, 'dd/MM/yyyy')}">Ngày</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="max-width: 780px;">
+        <div class="card-header">
+            <h3><i class="bi bi-shield-lock text-primary"></i> Đổi mật khẩu</h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/profile/change-password}" method="post">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="currentPassword">Mật khẩu hiện tại</label>
+                        <input type="password" id="currentPassword" name="currentPassword" class="form-control" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Mật khẩu mới</label>
+                        <input type="password" id="newPassword" name="newPassword" class="form-control" required/>
+                        <span class="form-hint">Tối thiểu 6 ký tự.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Xác nhận mật khẩu mới</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required/>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Đổi mật khẩu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${isEdit} ? 'Sửa tài khoản' : 'Tạo tài khoản')}"></head>
+<body th:replace="~{layout :: shell(${isEdit} ? 'Sửa tài khoản' : 'Tạo tài khoản mới', ~{::#page})}">
+<div id="page">
+
+    <div class="card" style="max-width: 760px;">
+        <div class="card-header">
+            <h3 th:text="${isEdit} ? 'Cập nhật tài khoản' : 'Thông tin tài khoản mới'">Form</h3>
+        </div>
+        <div class="card-body">
+            <form th:if="${!isEdit}" th:action="@{/users/create}" method="post">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="username">Tên đăng nhập <span class="req">*</span></label>
+                        <input type="text" id="username" name="username" class="form-control" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Mật khẩu <span class="req">*</span></label>
+                        <input type="password" id="password" name="password" class="form-control" required/>
+                        <span class="form-hint">Tối thiểu 6 ký tự.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="fullName">Họ tên <span class="req">*</span></label>
+                        <input type="text" id="fullName" name="fullName" class="form-control" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Vai trò</label>
+                        <select id="role" name="role" class="form-select">
+                            <option th:each="r : ${roles}" th:value="${r}" th:text="${r.label}"
+                                    th:selected="${r.name() == 'STAFF'}">Vai trò</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Điện thoại</label>
+                        <input type="text" id="phone" name="phone" class="form-control"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control"/>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Tạo tài khoản</button>
+                    <a th:href="@{/users}" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+
+            <form th:if="${isEdit}" th:action="@{/users/update}" method="post">
+                <input type="hidden" name="id" th:value="${account.id}"/>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tên đăng nhập</label>
+                        <input type="text" class="form-control" th:value="${account.username}" disabled/>
+                        <span class="form-hint">Tên đăng nhập không thể thay đổi.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Vai trò</label>
+                        <select id="role" name="role" class="form-select">
+                            <option th:each="r : ${roles}" th:value="${r}" th:text="${r.label}"
+                                    th:selected="${account.role == r}">Vai trò</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fullName">Họ tên <span class="req">*</span></label>
+                        <input type="text" id="fullName" name="fullName" class="form-control" th:value="${account.fullName}" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Điện thoại</label>
+                        <input type="text" id="phone" name="phone" class="form-control" th:value="${account.phone}"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" th:value="${account.email}"/>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Lưu thay đổi</button>
+                    <a th:href="@{/users}" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Danh sách thiết bị')}"></head>
+<body th:replace="~{layout :: shell('Quản lý thiết bị', ~{::#page})}">
+<div id="page">
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="bi bi-device-ssd text-primary"></i> Thiết bị điện tử <span class="badge badge-muted" th:text="'(' + ${totalElements} + ')'"></span></h3>
+            <a th:href="@{/devices/new}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Thiết bị mới</a>
+        </div>
+        <div class="card-body table-wrap">
+            <table class="table table-hover align-middle data-table">
+                <thead>
+                <tr>
+                    <th>Serial</th>
+                    <th>Loại</th>
+                    <th>Thiết bị</th>
+                    <th>Khách hàng</th>
+                    <th>SĐT</th>
+                    <th>Hết hạn bảo hành</th>
+                    <th>Bảo hành</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="d : ${devices}">
+                    <td><strong th:text="${d.serialNumber}">Serial</strong></td>
+                    <td th:text="${d.deviceType.label}">Loại</td>
+                    <td th:text="${d.brand + ' ' + d.model}">Thiết bị</td>
+                    <td>
+                        <a th:href="@{/customers/{id}(id=${d.customer.id})}" th:text="${d.customer.fullName}">Khách</a>
+                    </td>
+                    <td th:text="${d.customer.phone}">SĐT</td>
+                    <td th:text="${d.warrantyEndDate != null} ? ${#temporals.format(d.warrantyEndDate, 'dd/MM/yyyy')} : '-'">Ngày</td>
+                    <td>
+                        <span th:if="${d.underWarranty}" class="badge badge-success">Còn hạn</span>
+                        <span th:if="${!d.underWarranty}" class="badge badge-danger">Hết hạn</span>
+                    </td>
+                    <td class="text-end">
+                        <div class="d-flex gap-1 justify-content-end">
+                            <a th:href="@{/devices/edit/{id}(id=${d.id})}" class="btn btn-sm btn-secondary" title="Sửa"><i class="bi bi-pencil"></i></a>
+                            <a th:href="@{/devices/delete/{id}(id=${d.id})}" class="btn btn-sm btn-danger" title="Xóa"
+                               onclick="return confirm('Xóa thiết bị này?')"><i class="bi bi-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${devices.isEmpty()}">
+                    <td colspan="8" class="empty"><i class="bi bi-inbox d-block fs-3 mb-2"></i>Chưa có thiết bị nào được đăng ký.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${totalPages > 1}" class="card-footer d-flex justify-content-center">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" title="Trang đầu"
+                           th:href="@{/devices(page=0)}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" title="Trang trước"
+                           th:href="@{/devices(page=${currentPage - 1})}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:each="p : ${pages}"
+                        th:classappend="${!p.ellipsis && p.page == currentPage} ? 'active'">
+                        <a th:if="${!p.ellipsis}" class="page-link" th:text="${p.page + 1}"
+                           th:href="@{/devices(page=${p.page})}">1</a>
+                        <span th:if="${p.ellipsis}" class="page-link disabled">...</span>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" title="Trang sau"
+                           th:href="@{/devices(page=${currentPage + 1})}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" title="Trang cuối"
+                           th:href="@{/devices(page=${totalPages - 1})}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
